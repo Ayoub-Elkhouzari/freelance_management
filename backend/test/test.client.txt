@@ -1,0 +1,28 @@
+$body = @{
+  email    = "test1@mail.com"
+  password = "Test12345!"
+} | ConvertTo-Json
+
+$login = Invoke-RestMethod -Method POST -Uri "http://localhost:5000/auth/login" `
+  -ContentType "application/json" -Body $body
+
+$token = $login.token
+$token
+
+
+# Create
+$clientBody = @{
+  name = "Acme Corp"
+  type = "entreprise"
+  contact_name = "Alice"
+  contact_email = "alice@acme.com"
+  contact_phone = "+212600000000"
+  billing_address = "Rabat, Morocco"
+  notes = "VIP client"
+} | ConvertTo-Json
+
+$client = Invoke-RestMethod -Method POST -Uri "http://localhost:5000/clients" `
+  -Headers @{ Authorization = "Bearer $token" } `
+  -ContentType "application/json" -Body $clientBody
+
+$client

@@ -1,0 +1,78 @@
+#Register
+
+$body = @{
+  email      = "lamya@gmail.com"
+  password   = "Test12345!"
+  first_name = "lamya"
+  last_name  = "makea"
+  currency   = "MAD"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Method POST -Uri "http://localhost:5000/auth/register" `
+  -ContentType "application/json" -Body $body
+
+$body = @{
+  email      = "Ayoub@gmail.com"
+  password   = "Test12345!"
+  first_name = "Ayoub"
+  last_name  = "elkhouzari"
+  currency   = "MAD"
+} | ConvertTo-Json
+
+Invoke-RestMethod -Method POST -Uri "http://localhost:5000/auth/register" `
+  -ContentType "application/json" -Body $body
+
+#Login
+
+$body = @{
+  email    = "Ayoub@gmail.com"
+  password = "Test12345!"
+} | ConvertTo-Json
+
+$login = Invoke-RestMethod -Method POST -Uri "http://localhost:5000/auth/login" `
+  -ContentType "application/json" -Body $body
+
+$token = $login.token
+$token
+$loginBody = @{ email="Ayoub@gmail.com"; password="..." } | ConvertTo-Json
+$resp = Invoke-RestMethod -Method POST -Uri "http://localhost:5000/auth/login" `
+  -ContentType "application/json" -Body $loginBody
+
+$access = $resp.accessToken
+$refresh = $resp.refreshToken
+
+
+# Create
+$taskBody = @{
+  title = "Design homepage"
+  description = "Hero + pricing section"
+  status = "todo"
+  priority = "high"
+  due_date = "2025-12-31"
+  estimated_hours = 6.5
+} | ConvertTo-Json
+
+$created = Invoke-RestMethod -Method POST -Uri "http://localhost:5000/projects/$projectId/tasks" `
+  -Headers @{ Authorization = "Bearer $token" } `
+  -ContentType "application/json" -Body $taskBody
+
+$created
+$taskId = $created.data.id
+$taskId
+
+# READ list
+$list = Invoke-RestMethod -Method GET -Uri "http://localhost:5000/projects/$projectId/tasks?page=1&limit=20" `
+  -Headers @{ Authorization = "Bearer $token" }
+
+$list.data.items
+$list.data.pagination
+
+# Filter examples
+Invoke-RestMethod -Method GET -Uri "http://localhost:5000/projects/$projectId/tasks?status=todo" `
+  -Headers @{ Authorization = "Bearer $token" }
+
+Invoke-RestMethod -Method GET -Uri "http://localhost:5000/projects/$projectId/tasks?priority=high" `
+  -Headers @{ Authorization = "Bearer $token" }
+
+Invoke-RestMethod -Method GET -Uri "http://localhost:5000/projects/$projectId/tasks?due_date=2025-12-31" `
+  -Headers @{ Authorization = "Bearer $token" }

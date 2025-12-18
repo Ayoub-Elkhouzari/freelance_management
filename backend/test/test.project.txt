@@ -1,0 +1,45 @@
+$body = @{
+  email    = "test1@mail.com"
+  password = "Test12345!"
+} | ConvertTo-Json
+
+$login = Invoke-RestMethod -Method POST -Uri "http://localhost:5000/auth/login" `
+  -ContentType "application/json" -Body $body
+
+$token = $login.token
+$token
+
+
+# Create
+$projectBody = @{
+  client_id = 3
+  name = "Website redesign"
+  description = "Landing + dashboard"
+  status = "active"
+  hourly_rate = 25
+} | ConvertTo-Json
+
+$proj = Invoke-RestMethod -Method POST -Uri "http://localhost:5000/projects" `
+  -Headers @{ Authorization = "Bearer $token" } `
+  -ContentType "application/json" -Body $projectBody
+
+$proj
+$projectId = $proj.data.id
+
+# List
+Invoke-RestMethod -Method GET -Uri "http://localhost:5000/projects?page=1&limit=20" `
+  -Headers @{ Authorization = "Bearer $token" }
+
+# Get by id
+Invoke-RestMethod -Method GET -Uri "http://localhost:5000/projects/$projectId" `
+  -Headers @{ Authorization = "Bearer $token" }
+
+# Update
+$updateBody = @{ status = "en_pause" } | ConvertTo-Json
+Invoke-RestMethod -Method PUT -Uri "http://localhost:5000/projects/$projectId" `
+  -Headers @{ Authorization = "Bearer $token" } `
+  -ContentType "application/json" -Body $updateBody
+
+# Delete (hard delete)
+Invoke-RestMethod -Method DELETE -Uri "http://localhost:5000/projects/$projectId" `
+  -Headers @{ Authorization = "Bearer $token" }
